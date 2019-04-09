@@ -1,0 +1,8 @@
+require './algorithm'
+require './globals'
+require './helpers'
+require './setup'
+require './status'
+require './weight'
+require './Person'
+require './Slot'

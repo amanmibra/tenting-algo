@@ -1,0 +1,32 @@
+require './algorithm'
+require './globals'
+require './helpers'
+require './setup'
+require './status'
+require './weight'
+require './Person'
+require './Slot'
+
+def calculatePeopleNeeded(nightBoolean, phase)
+  if phase == "Black"
+    if nightBoolean
+      return 10
+    else
+      return 2
+    end
+  end
+  if phase == "Blue"
+    if nightBoolean
+      return 6
+    else
+      return 1
+    end
+  end
+  if phase == "White"
+    if nightBoolean
+      return 2
+    else
+      return 1
+    end
+  end
+end
