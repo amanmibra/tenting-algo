@@ -12,6 +12,7 @@ def weightReset(slots)
   slots.each do | currentSlot |
     currentSlot.weight = 1;
   end
+  slots
 end
 
 # Weight Balance - prioritize people with fewer scheduled shifts
@@ -49,6 +50,7 @@ def weightBalance(people, slots)
     end
 
   end
+  return people, slots
 end
 
 # Weight Contiguous - prioritize people to stay in the tent more time at once.
@@ -130,9 +132,9 @@ def weightContiguous(people, slots, scheduleGrid, graveyard)
     end
 
     # Below is free, above is not free
-    if(belowFree && !aboveTent && !aboveFree){
+    if(belowFree && !aboveTent && !aboveFree)
       multi = 1
-    }
+    end
 
     # Night Multi
     if aboveIsNight || belowIsNight || currentIsNight
@@ -143,7 +145,7 @@ def weightContiguous(people, slots, scheduleGrid, graveyard)
 
   end
 
-  end
+  return people, slots, scheduleGrid, graveyard
 end
 
 # Weight Tough Time - prioritize time slots with few people available. */
@@ -168,6 +170,7 @@ def weightToughTime(people, slots, length)
     currentSlot.weight = currentSlot.weight*(12/numFreePeople)*peopleNeeded
   end
 
+  return people, slots, length
 end
 
 # Update people, spreadsheet, and remove slots.
@@ -182,11 +185,11 @@ def weightPick(people, slots, results, graveyard, scheduleGrid)
   currentTime = winner.isNight;
 
   if currentTime
-    people[currentPersonID].nightScheduled++;
-    people[currentPersonID].nightFree--;
+    people[currentPersonID].nightScheduled += 1
+    people[currentPersonID].nightFree -= 1
    else
-    people[currentPersonID].dayScheduled++;
-    people[currentPersonID].dayFree--;
+    people[currentPersonID].dayScheduled += 1
+    people[currentPersonID].dayFree -= 1
   end
 
   # Update Data
@@ -224,9 +227,10 @@ def weightPick(people, slots, results, graveyard, scheduleGrid)
           people[tempID].dayFree = people[tempID].dayFree -1
         end
         slots.delete(j);
-        j--;
+        j -= 1
       end
     end
   end
 
+  return people, slots, results, graveyard, scheduleGrid
 end

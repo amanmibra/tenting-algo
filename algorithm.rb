@@ -1,42 +1,33 @@
-require './algorithm'
-require './globals'
-require './helpers'
-require './setup'
-require './status'
-require './weight'
-require './Person'
-require './Slot'
 
 # Central document for creating schedule.
-def schedule(people, slots, scheduleGrid)
+def schedule(people, scheduleGrid)
 
   # Create results and scheduled rows "graveyard"
   results = Array.new
-  graveyard = Array.new
 
   # Remove all availability slots that are already filled in the schedule.
-  slots = removeFilledSlots(people, slots, scheduleGrid, graveyard)
+  slots, graveyard, people, scheduleGrid = removeFilledSlots(people, scheduleGrid)
 
   # Remove all availability slots that are already filled in the schedule.
   while slots.length > 0
 
     # Weight Reset - set all weights to 1.
-    weightReset(slots)
+    slots = weightReset(slots)
 
     # Weight Balance - prioritize people with fewer scheduled shifts.
-    weightBalance(people, slots)
+    people, slots = weightBalance(people, slots)
 
     # Weight Contiguous - prioritize people to stay in the tent more time at once.
-    weightContiguous(people, slots, scheduleGrid, graveyard)
+    people, slots, scheduleGrid, graveyard = weightContiguous(people, slots, scheduleGrid, graveyard)
 
     # Weight Tough Time - prioritize time slots with few people available.
-    weightToughTime(people, slots, scheduleGrid[0].length)
+    people, slots, scheduleGrid[0].length = weightToughTime(people, slots, scheduleGrid[0].length)
 
     # Sort by Weights
     slots.sort_by { |a| -a.weight }
 
     # Update people, spreadsheet, and remove slots.
-    weightPick(people, slots, results, graveyard, scheduleGrid)
+    people, slots, results, graveyard, scheduleGrid = weightPick(people, slots, results, graveyard, scheduleGrid)
 
   end
 
@@ -46,7 +37,7 @@ end
 
 
 # Remove all availability slots that are already filled in the schedule.
-def removeFilledSlots(people,slots,scheduleGrid,graveyard)
+  def removeFilledSlots(people, scheduleGrid)
 
   # Reset Slots Array.
   slots = Array.new
@@ -94,9 +85,9 @@ def removeFilledSlots(people,slots,scheduleGrid,graveyard)
       # Update person freedom
       if numPeople >= peopleNeeded  && currentPerson[counter].status == "Available"
         if isNight
-          people[i].nightFree--;
+          people[i].nightFree -= 1
         else
-          people[i].dayFree--;
+          people[i].dayFree -= 1
         end
       end
 
@@ -108,6 +99,6 @@ def removeFilledSlots(people,slots,scheduleGrid,graveyard)
 
   end
 
-  return slots
+  return slots, graveyard, people, scheduleGrid
 
 end
