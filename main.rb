@@ -18,6 +18,7 @@ class Olson
   end
 end
 
+# testing
 people = Array.new
 for i in 0..10
   p = Person.new(
@@ -34,4 +35,14 @@ end
 puts "people"
 people.each do |p|
   puts p.name
+end
+
+slots = Array.new
+
+startToday = Time.now.beginning_of_day
+endToday = Time.now.end_of_day
+for i in 0..100
+  startDate = rand(startToday..endToday)
+  endDate = startDate + 60 # adding 60 min for 1 hr long Slots
+  # TODO: Understand scheduleGrid and how Slots work, then finish test
 end
