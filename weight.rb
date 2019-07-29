@@ -1,236 +1,231 @@
-require './algorithm'
-require './globals'
-require './helpers'
-require './setup'
-require './status'
-require './weight'
-require './Person'
-require './Slot'
+require "./helpers"
 
-# Weight Reset - set all weights to 1.
-def weightReset(slots)
-  slots.each do | currentSlot |
-    currentSlot.weight = 1;
+module Weight
+  # Weight Reset - set all weights to 1.
+  def weightReset(slots)
+    slots.each do | currentSlot |
+      currentSlot.weight = 1;
+    end
+    slots
   end
-  slots
-end
 
-# Weight Balance - prioritize people with fewer scheduled shifts
-def weightBalance(people, slots)
+  # Weight Balance - prioritize people with fewer scheduled shifts
+  def weightBalance(people, slots)
 
-  slots.each do | currentSlot |
+    slots.each do | currentSlot |
 
-    # Establish variables.
-    currentPersonID = currentSlot.personID
-    dayScheduled = people[currentPersonID].dayScheduled
-    nightScheduled = people[currentPersonID].nightScheduled
-    night = currentSlot.isNight;
+      # Establish variables.
+      currentPersonID = currentSlot.personID
+      dayScheduled = people[currentPersonID].dayScheduled
+      nightScheduled = people[currentPersonID].nightScheduled
+      night = currentSlot.isNight;
 
-    nightMulti = 0;
-    dayMulti = 0;
+      nightMulti = 0;
+      dayMulti = 0;
 
-    # Set multipliers.
-    if nightScheduled != 0
-      nightMulti = 1.0 / nightScheduled
-    else
-      nightMulti = 1.5
-    end
-
-    if dayScheduled != 0
-      dayMulti = (1.0/(dayScheduled+nightScheduled*4*2))
-    else
-      dayMulti = 1.5
-    end
-
-    #Adjust weights with multipliers.
-    if night
-      currentSlot.weight = currentSlot.weight * nightMulti
-    else
-      currentSlot.weight = currentSlot.weight * dayMulti
-    end
-
-  end
-  return people, slots
-end
-
-# Weight Contiguous - prioritize people to stay in the tent more time at once.
-def weightContiguous(people, slots, scheduleGrid, graveyard)
-
-  i = 0
-  while i < slots.length
-    # Establish Variables
-    currentRow = slots[i].row
-    currentCol = slots[i].col
-    night = slots[i].isNight
-
-    aboveRow = currentRow-1
-    belowRow = currentRow+1
-    aboveCol = currentCol
-    belowCol = currentCol
-
-    currentIsNight = slots[i].isNight
-    aboveIsNight = scheduleGrid[aboveCol][aboveRow].isNight
-    belowIsNight = scheduleGrid[belowCol][belowRow].isNight
-
-    aboveTent = scheduleGrid[aboveCol][aboveRow].status == "Scheduled"
-    belowTent = scheduleGrid[belowCol][belowRow].status == "Scheduled"
-    aboveFree = scheduleGrid[aboveCol][aboveRow].status == "Available"
-    belowFree = scheduleGrid[belowCol][belowRow].status == "Available"
-
-    multi = 1
-
-    # Determine tent, available, and not available for above
-    if graveyard[aboveRow] == 1 && aboveFree
-      aboveFree = false
-    end
-
-    # Determine tent, available, and not available for below
-    if graveyard[belowRow] == 1 && belowFree
-      belowFree = false
-    end
-
-    # Both are scheduled.
-    if aboveTent && belowTent
-      multi = 100
-    end
-
-    # Both are not free
-    if !belowTent && !belowFree && !aboveTent && !aboveFree
-      if slots[i].weight > 0
-        multi = -1
+      # Set multipliers.
+      if nightScheduled != 0
+        nightMulti = 1.0 / nightScheduled
+      else
+        nightMulti = 1.5
       end
-    end
 
-    # Above is scheduled, below is free.
-    if aboveTent && !belowTent && belowFree
-      multi = 3.25
-    end
+      if dayScheduled != 0
+        dayMulti = (1.0/(dayScheduled+nightScheduled*4*2))
+      else
+        dayMulti = 1.5
+      end
 
-    # Below is scheduled, above is free.
-    if belowTent && !aboveTent && aboveFree
-      multi = 3.25
-    end
+      #Adjust weights with multipliers.
+      if night
+        currentSlot.weight = currentSlot.weight * nightMulti
+      else
+        currentSlot.weight = currentSlot.weight * dayMulti
+      end
 
-    # Above is scheduled, below is not free.
-    if aboveTent && !belowTent && !belowFree
-      multi = 3
     end
+    return people, slots
+  end
 
-    # Below is scheduled, above is not free.
-    if belowTent && !aboveTent && !aboveFree
-      multi = 3
-    end
+  # Weight Contiguous - prioritize people to stay in the tent more time at once.
+  def weightContiguous(people, slots, scheduleGrid, graveyard)
 
-    # Both are free
-    if belowFree && aboveFree
-      multi = 2.75
-    end
+    i = 0
+    while i < slots.length
+      # Establish Variables
+      currentRow = slots[i].row
+      currentCol = slots[i].col
+      night = slots[i].isNight
 
-    # Above is free, below is not free
-    if aboveFree && !belowTent && !belowFree
+      aboveRow = currentRow-1
+      belowRow = currentRow+1
+      aboveCol = currentCol
+      belowCol = currentCol
+
+      currentIsNight = slots[i].isNight
+      aboveIsNight = scheduleGrid[aboveCol][aboveRow].isNight
+      belowIsNight = scheduleGrid[belowCol][belowRow].isNight
+
+      aboveTent = scheduleGrid[aboveCol][aboveRow].status == "Scheduled"
+      belowTent = scheduleGrid[belowCol][belowRow].status == "Scheduled"
+      aboveFree = scheduleGrid[aboveCol][aboveRow].status == "Available"
+      belowFree = scheduleGrid[belowCol][belowRow].status == "Available"
+
       multi = 1
-    end
 
-    # Below is free, above is not free
-    if(belowFree && !aboveTent && !aboveFree)
-      multi = 1
-    end
+      # Determine tent, available, and not available for above
+      if graveyard[aboveRow] == 1 && aboveFree
+        aboveFree = false
+      end
 
-    # Night Multi
-    if aboveIsNight || belowIsNight || currentIsNight
-      multi = multi*1.25
-    end
+      # Determine tent, available, and not available for below
+      if graveyard[belowRow] == 1 && belowFree
+        belowFree = false
+      end
 
-    slots[i].weight = slots[i].weight*multi
+      # Both are scheduled.
+      if aboveTent && belowTent
+        multi = 100
+      end
 
-  end
-
-  return people, slots, scheduleGrid, graveyard
-end
-
-# Weight Tough Time - prioritize time slots with few people available. */
-def weightToughTime(people, slots, length)
-
-  # Set up counterArray (Rows that are filled).
-  counterArray = Array.new(length+1, 0)
-
-  # Fill counterArray.
-  slots.each do | currentSlot |
-    currentRow = currentSlot.row
-    counterArray[currentRow] = counterArray[currentRow] + 1
-  end
-
-  # Update Weights.
-  slots.each do | currentSlot |
-    currentRow = currentSlot.row
-    currentPhase = currentSlot.phase
-    nightBoolean = currentSlot.isNight
-    peopleNeeded = calculatePeopleNeeded(nightBoolean, phase)
-    numFreePeople = counterArray[currentRow]
-    currentSlot.weight = currentSlot.weight*(12/numFreePeople)*peopleNeeded
-  end
-
-  return people, slots, length
-end
-
-# Update people, spreadsheet, and remove slots.
-def weightPick(people, slots, results, graveyard, scheduleGrid)
-
-  # Remove winner from list.
-  winner = slots.shift;
-  results.push(winner);
-
-  # Update person information.
-  currentPersonID = winner.personID;
-  currentTime = winner.isNight;
-
-  if currentTime
-    people[currentPersonID].nightScheduled += 1
-    people[currentPersonID].nightFree -= 1
-   else
-    people[currentPersonID].dayScheduled += 1
-    people[currentPersonID].dayFree -= 1
-  end
-
-  # Update Data
-  scheduleGrid[col][row].status = "Scheduled";
-
-  # Establish Variables
-  currentPhase = winner.phase
-  currentRow = winner.row
-  currentCol = winner.col
-  tentCounter = 0
-
-  # Count number of scheduled tenters during winner slot.
-  i = 0
-  while i < 12
-    if scheduleGrid[i][currentRow].status == "Scheduled"
-      tentCounter = tentCounter + 1
-    end
-  end
-
-  # Determine how many people are needed.
-  peopleNeeded = calculatePeopleNeeded(currentTime, winner.phase)
-
-  # Update Slots and Graveyard
-  if tentCounter >= peopleNeeded
-    graveyard[currentRow] = 1
-    j = 0
-    while j < slots.length
-      tempRow = slots[j].row
-      tempID = slots[j].personID
-      tempNight = slots[j].isNight
-      if tempRow == currentRow
-        if tempNight
-          people[tempID].nightFree = people[tempID].nightFree = 1
-        else
-          people[tempID].dayFree = people[tempID].dayFree -1
+      # Both are not free
+      if !belowTent && !belowFree && !aboveTent && !aboveFree
+        if slots[i].weight > 0
+          multi = -1
         end
-        slots.delete(j);
-        j -= 1
       end
+
+      # Above is scheduled, below is free.
+      if aboveTent && !belowTent && belowFree
+        multi = 3.25
+      end
+
+      # Below is scheduled, above is free.
+      if belowTent && !aboveTent && aboveFree
+        multi = 3.25
+      end
+
+      # Above is scheduled, below is not free.
+      if aboveTent && !belowTent && !belowFree
+        multi = 3
+      end
+
+      # Below is scheduled, above is not free.
+      if belowTent && !aboveTent && !aboveFree
+        multi = 3
+      end
+
+      # Both are free
+      if belowFree && aboveFree
+        multi = 2.75
+      end
+
+      # Above is free, below is not free
+      if aboveFree && !belowTent && !belowFree
+        multi = 1
+      end
+
+      # Below is free, above is not free
+      if(belowFree && !aboveTent && !aboveFree)
+        multi = 1
+      end
+
+      # Night Multi
+      if aboveIsNight || belowIsNight || currentIsNight
+        multi = multi*1.25
+      end
+
+      slots[i].weight = slots[i].weight*multi
+
     end
+
+    return people, slots, scheduleGrid, graveyard
   end
 
-  return people, slots, results, graveyard, scheduleGrid
+  # Weight Tough Time - prioritize time slots with few people available. */
+  def weightToughTime(people, slots, length)
+
+    # Set up counterArray (Rows that are filled).
+    counterArray = Array.new(length+1, 0)
+
+    # Fill counterArray.
+    slots.each do | currentSlot |
+      currentRow = currentSlot.row
+      counterArray[currentRow] = counterArray[currentRow] + 1
+    end
+
+    # Update Weights.
+    slots.each do | currentSlot |
+      currentRow = currentSlot.row
+      currentPhase = currentSlot.phase
+      nightBoolean = currentSlot.isNight
+      peopleNeeded = calculatePeopleNeeded(nightBoolean, phase)
+      numFreePeople = counterArray[currentRow]
+      currentSlot.weight = currentSlot.weight*(12/numFreePeople)*peopleNeeded
+    end
+
+    return people, slots, length
+  end
+
+  # Update people, spreadsheet, and remove slots.
+  def weightPick(people, slots, results, graveyard, scheduleGrid)
+
+    # Remove winner from list.
+    winner = slots.shift;
+    results.push(winner);
+
+    # Update person information.
+    currentPersonID = winner.personID;
+    currentTime = winner.isNight;
+
+    if currentTime
+      people[currentPersonID].nightScheduled += 1
+      people[currentPersonID].nightFree -= 1
+     else
+      people[currentPersonID].dayScheduled += 1
+      people[currentPersonID].dayFree -= 1
+    end
+
+    # Update Data
+    scheduleGrid[col][row].status = "Scheduled";
+
+    # Establish Variables
+    currentPhase = winner.phase
+    currentRow = winner.row
+    currentCol = winner.col
+    tentCounter = 0
+
+    # Count number of scheduled tenters during winner slot.
+    i = 0
+    while i < 12
+      if scheduleGrid[i][currentRow].status == "Scheduled"
+        tentCounter = tentCounter + 1
+      end
+    end
+
+    # Determine how many people are needed.
+    peopleNeeded = calculatePeopleNeeded(currentTime, winner.phase)
+
+    # Update Slots and Graveyard
+    if tentCounter >= peopleNeeded
+      graveyard[currentRow] = 1
+      j = 0
+      while j < slots.length
+        tempRow = slots[j].row
+        tempID = slots[j].personID
+        tempNight = slots[j].isNight
+        if tempRow == currentRow
+          if tempNight
+            people[tempID].nightFree = people[tempID].nightFree = 1
+          else
+            people[tempID].dayFree = people[tempID].dayFree -1
+          end
+          slots.delete(j);
+          j -= 1
+        end
+      end
+    end
+
+    return people, slots, results, graveyard, scheduleGrid
+  end
 end
