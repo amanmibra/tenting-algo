@@ -1,6 +1,14 @@
 # Slots objects make up the ScheduleGrid input.
 
 class Slot
+  attr_accessor :personID,
+                :startDate, :endDate,
+                :phase,
+                :isNight,
+                :status,
+                :row, :col,
+                :weight
+
   def initialize(personID, startDate, endDate, phase, isNight, status, row, col, weight)
     @personID = personID
     @startDate = startDate
