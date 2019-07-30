@@ -1,3 +1,4 @@
+require "date"
 require "faker"
 
 require "./Person"
@@ -37,12 +38,37 @@ people.each do |p|
   puts p.name
 end
 
-slots = Array.new
+slotGrid = Array.new
 
-startToday = Time.now.beginning_of_day
-endToday = Time.now.end_of_day
+# TODO: Fix Time object
+now = Time.now
+startToday = Time.new(now.year, now.month, now.day, 0, 0, 0, now.zone)
+endToday = Time.new(now.year, now.month, now.day, 23, 59 , 59, now.zone)
+
 for i in 0..100
   startDate = rand(startToday..endToday)
   endDate = startDate + 60 # adding 60 min for 1 hr long Slots
-  # TODO: Understand scheduleGrid and how Slots work, then finish test
+  phase = ["Black", "Blue", "White"].sample
+  isNight = startDate.hour < 7 && endDate.hour < 7
+  row = i
+  col = 0
+
+  people.each do |p|
+    id = p.id
+    status = ["Available", "Unavailable"].sample
+    slot = Slot.new(
+      id,
+      startDate,
+      endDate,
+      phase,
+      isNight,
+      status,
+      row, col
+    )
+
+    if !slotGrid[id]
+      slotGrid[id] = Array.new
+    end
+    slotGrid[id].push(slot)
+  end
 end

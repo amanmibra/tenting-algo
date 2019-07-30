@@ -9,7 +9,7 @@ class Slot
                 :row, :col,
                 :weight
 
-  def initialize(personID, startDate, endDate, phase, isNight, status, row, col, weight)
+  def initialize(personID, startDate, endDate, phase, isNight, status, row, col, weight=1)
     @personID = personID
     @startDate = startDate
     @endDate = endDate
