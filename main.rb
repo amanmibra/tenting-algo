@@ -22,32 +22,15 @@ end
 # testing
 people = Array.new
 for i in 0..10
-  p = Person.new(
-    i,
-    Faker::Name.name,
-    Faker::Number.within(1..30),
-    0,
-    Faker::Number.within(1..10),
-    Faker::Number.within(1..10),
-  )
+  p = Person.new(i, Faker::Name.name, 0, 0, 0, 0)
   people.push p
-end
-
-puts "people"
-people.each do |p|
-  puts p.name
 end
 
 slotGrid = Array.new
 
-# TODO: Fix Time object
-now = Time.now
-startToday = Time.new(now.year, now.month, now.day, 0, 0, 0, now.zone)
-endToday = Time.new(now.year, now.month, now.day, 23, 59 , 59, now.zone)
-
 for i in 0..100
-  startDate = rand(startToday..endToday)
-  endDate = startDate + 60 # adding 60 min for 1 hr long Slots
+  startDate = Time.now + rand(0..60*60*24) # any time within the next hr
+  endDate = startDate + 60*10 # adding 60 min for 1 hr long Slots
   phase = ["Black", "Blue", "White"].sample
   isNight = startDate.hour < 7 && endDate.hour < 7
   row = i
@@ -56,6 +39,13 @@ for i in 0..100
   people.each do |p|
     id = p.id
     status = ["Available", "Unavailable"].sample
+    if status == "Available"
+      if isNight
+        p.nightFree += 1
+      else
+        p.dayFree += 1
+      end
+    end
     slot = Slot.new(
       id,
       startDate,
@@ -71,4 +61,9 @@ for i in 0..100
     end
     slotGrid[id].push(slot)
   end
+end
+
+puts "people"
+people.each do |p|
+  puts p.name + " " + p.dayFree.to_s + ", " + p.nightFree.to_s
 end
