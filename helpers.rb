@@ -1,5 +1,5 @@
 module Helpers
-  def calculatePeopleNeeded(nightBoolean, phase)
+  def self.calculatePeopleNeeded(nightBoolean, phase)
     if phase == "Black"
       if nightBoolean
         return 10

@@ -9,10 +9,10 @@ require "./algorithm"
 class Olson
   include Algorithm
   # Main Driver
-  def driver(peopleList, scheduleGrid)
+  def self.driver(peopleList, scheduleGrid)
 
     # Algorithm
-    updatedPeopleList, updatedScheduleGrid = schedule(peopleList, scheduleGrid)
+    updatedPeopleList, updatedScheduleGrid = Algorithm.schedule(peopleList, scheduleGrid)
 
     return updatedPeopleList, updatedScheduleGrid
 
@@ -64,6 +64,14 @@ for i in 0..100
 end
 
 puts "people"
+people.each do |p|
+  puts p.name + " " + p.dayFree.to_s + ", " + p.nightFree.to_s
+end
+
+people, b = Olson.driver people, slotGrid
+
+puts ""
+puts "new people"
 people.each do |p|
   puts p.name + " " + p.dayFree.to_s + ", " + p.nightFree.to_s
 end

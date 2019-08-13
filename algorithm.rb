@@ -2,9 +2,10 @@ require "./weight"
 require "./helpers"
 
 module Algorithm
+  include Helpers
 
   # Central document for creating schedule.
-  def schedule(people, scheduleGrid)
+  def self.schedule(people, scheduleGrid)
 
     # Create results and scheduled rows "graveyard"
     results = Array.new
@@ -41,7 +42,7 @@ module Algorithm
 
 
   # Remove all availability slots that are already filled in the schedule.
-    def removeFilledSlots(people, scheduleGrid)
+    def self.removeFilledSlots(people, scheduleGrid)
 
     # Reset Slots Array.
     slots = Array.new
@@ -73,8 +74,10 @@ module Algorithm
         # Determine how many people are needed.
         nightBoolean = currentPerson[counter].isNight
         phase = currentPerson[counter].phase
-        peopleNeeded = calculatePeopleNeeded(nightBoolean, phase)
+        peopleNeeded = Helpers.calculatePeopleNeeded(nightBoolean, phase)
         numPeople = currentPerson[counter]
+
+        puts currentPerson # TODO: Get Olson to explain how the number of people under a slot should be counted
 
         # Only add in slot if necessary.
         if numPeople < peopleNeeded && currentPerson[counter].status == "Available"
