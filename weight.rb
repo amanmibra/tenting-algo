@@ -51,7 +51,10 @@ module Weight
   def weightContiguous(people, slots, scheduleGrid, graveyard)
 
     i = 0
+    puts "slots.length"
+    puts slots.length
     while i < slots.length
+      # puts i
       # Establish Variables
       currentRow = slots[i].row
       currentCol = slots[i].col
@@ -64,7 +67,7 @@ module Weight
 
       currentIsNight = slots[i].isNight
       aboveIsNight = scheduleGrid[aboveCol][aboveRow].isNight
-      belowIsNight = scheduleGrid[belowCol][belowRow].isNight
+      belowIsNight = scheduleGrid[belowCol][belowRow].isNight # TODO: err check for rows and cols
 
       aboveTent = scheduleGrid[aboveCol][aboveRow].status == "Scheduled"
       belowTent = scheduleGrid[belowCol][belowRow].status == "Scheduled"
@@ -136,6 +139,7 @@ module Weight
       end
 
       slots[i].weight = slots[i].weight*multi
+      i += 1
 
     end
 

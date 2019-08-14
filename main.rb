@@ -28,7 +28,7 @@ end
 
 slotGrid = Array.new
 
-for i in 0..100
+for i in 0..5
   startDate = Time.now + rand(0..60*60*24) # any time within the next hr
   endDate = startDate + 60*10 # adding 60 min for 1 hr long Slots
   phase = ["Black", "Blue", "White"].sample

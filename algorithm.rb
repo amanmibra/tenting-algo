@@ -3,6 +3,7 @@ require "./helpers"
 
 module Algorithm
   include Helpers
+  extend Weight
 
   # Central document for creating schedule.
   def self.schedule(people, scheduleGrid)
@@ -13,8 +14,12 @@ module Algorithm
     # Remove all availability slots that are already filled in the schedule.
     slots, graveyard, people, scheduleGrid = removeFilledSlots(people, scheduleGrid)
 
+    count = 0
+
     # Remove all availability slots that are already filled in the schedule.
     while slots.length > 0
+      count += 1
+      puts count
 
       # Weight Reset - set all weights to 1.
       slots = weightReset(slots)
@@ -75,9 +80,7 @@ module Algorithm
         nightBoolean = currentPerson[counter].isNight
         phase = currentPerson[counter].phase
         peopleNeeded = Helpers.calculatePeopleNeeded(nightBoolean, phase)
-        numPeople = currentPerson[counter]
-
-        puts currentPerson # TODO: Get Olson to explain how the number of people under a slot should be counted
+        numPeople = counterArray[counter]
 
         # Only add in slot if necessary.
         if numPeople < peopleNeeded && currentPerson[counter].status == "Available"
