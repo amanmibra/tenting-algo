@@ -1,6 +1,8 @@
 require "./helpers"
 
 module Weight
+  include Helpers
+
   # Weight Reset - set all weights to 1.
   def weightReset(slots)
     slots.each do | currentSlot |
@@ -47,12 +49,17 @@ module Weight
     return people, slots
   end
 
+  def gridLimits(row, col, rowLength, colLength)
+    return row - 1 < 0,
+           col - 1 < 0,
+           row + 1 > rowLength - 1,
+           col + 1 > colLength - 1
+  end
+
   # Weight Contiguous - prioritize people to stay in the tent more time at once.
   def weightContiguous(people, slots, scheduleGrid, graveyard)
 
     i = 0
-    puts "slots.length"
-    puts slots.length
     while i < slots.length
       # puts i
       # Establish Variables
@@ -62,17 +69,25 @@ module Weight
 
       aboveRow = currentRow-1
       belowRow = currentRow+1
-      aboveCol = currentCol
-      belowCol = currentCol
+      aboveCol = currentCol-1
+      belowCol = currentCol+1
+
+      # find what to skip
+      skipAboveRow, skipAboveCol, skipBelowRow, skipBelowCol = gridLimits(
+                                                                          currentRow,
+                                                                          currentCol,
+                                                                          scheduleGrid[belowCol].length,
+                                                                          scheduleGrid.length
+                                                                        )
 
       currentIsNight = slots[i].isNight
-      aboveIsNight = scheduleGrid[aboveCol][aboveRow].isNight
-      belowIsNight = scheduleGrid[belowCol][belowRow].isNight # TODO: err check for rows and cols
+      aboveIsNight = !skipAboveCol && !skipAboveRow && scheduleGrid[aboveCol][aboveRow].isNight
+      belowIsNight = !skipBelowCol && !skipBelowRow && scheduleGrid[belowCol][belowRow].isNight
 
-      aboveTent = scheduleGrid[aboveCol][aboveRow].status == "Scheduled"
-      belowTent = scheduleGrid[belowCol][belowRow].status == "Scheduled"
-      aboveFree = scheduleGrid[aboveCol][aboveRow].status == "Available"
-      belowFree = scheduleGrid[belowCol][belowRow].status == "Available"
+      aboveTent = !skipAboveCol && !skipAboveRow && scheduleGrid[aboveCol][aboveRow].status == "Scheduled"
+      belowTent = !skipBelowCol && !skipBelowRow && scheduleGrid[belowCol][belowRow].status == "Scheduled"
+      aboveFree = !skipAboveCol && !skipAboveRow && scheduleGrid[aboveCol][aboveRow].status == "Available"
+      belowFree = !skipBelowCol && !skipBelowRow && scheduleGrid[belowCol][belowRow].status == "Available"
 
       multi = 1
 
@@ -163,12 +178,12 @@ module Weight
       currentRow = currentSlot.row
       currentPhase = currentSlot.phase
       nightBoolean = currentSlot.isNight
-      peopleNeeded = calculatePeopleNeeded(nightBoolean, phase)
+      peopleNeeded = Helpers.calculatePeopleNeeded(nightBoolean, currentPhase)
       numFreePeople = counterArray[currentRow]
       currentSlot.weight = currentSlot.weight*(12/numFreePeople)*peopleNeeded
     end
 
-    return people, slots, length
+    return people, slots
   end
 
   # Update people, spreadsheet, and remove slots.
@@ -190,44 +205,47 @@ module Weight
       people[currentPersonID].dayFree -= 1
     end
 
-    # Update Data
-    scheduleGrid[col][row].status = "Scheduled";
-
     # Establish Variables
     currentPhase = winner.phase
     currentRow = winner.row
     currentCol = winner.col
     tentCounter = 0
 
+    # Update Data
+    scheduleGrid[currentCol][currentRow].status = "Scheduled";
+
     # Count number of scheduled tenters during winner slot.
     i = 0
-    while i < 12
+    while i < scheduleGrid.length
       if scheduleGrid[i][currentRow].status == "Scheduled"
         tentCounter = tentCounter + 1
       end
+      i += 1
     end
 
     # Determine how many people are needed.
-    peopleNeeded = calculatePeopleNeeded(currentTime, winner.phase)
+    peopleNeeded = Helpers.calculatePeopleNeeded(currentTime, winner.phase)
 
     # Update Slots and Graveyard
     if tentCounter >= peopleNeeded
       graveyard[currentRow] = 1
       j = 0
+      tempSlot = slots.dup # deepcopy slots
       while j < slots.length
         tempRow = slots[j].row
         tempID = slots[j].personID
         tempNight = slots[j].isNight
         if tempRow == currentRow
           if tempNight
-            people[tempID].nightFree = people[tempID].nightFree = 1
+            people[tempID].nightFree -= 1
           else
-            people[tempID].dayFree = people[tempID].dayFree -1
+            people[tempID].dayFree -= 1
           end
-          slots.delete(j);
-          j -= 1
+          tempSlot.delete(j);
         end
+        j += 1
       end
+      slot = tempSlot
     end
 
     return people, slots, results, graveyard, scheduleGrid

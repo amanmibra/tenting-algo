@@ -19,7 +19,6 @@ module Algorithm
     # Remove all availability slots that are already filled in the schedule.
     while slots.length > 0
       count += 1
-      puts count
 
       # Weight Reset - set all weights to 1.
       slots = weightReset(slots)
@@ -31,7 +30,7 @@ module Algorithm
       people, slots, scheduleGrid, graveyard = weightContiguous(people, slots, scheduleGrid, graveyard)
 
       # Weight Tough Time - prioritize time slots with few people available.
-      people, slots, scheduleGrid[0].length = weightToughTime(people, slots, scheduleGrid[0].length)
+      people, slots = weightToughTime(people, slots, scheduleGrid[0].length)
 
       # Sort by Weights
       slots.sort_by { |a| -a.weight }
