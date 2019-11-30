@@ -34,7 +34,7 @@ for i in 0..10
   startTime = currentTime
   slots = Array.new
   for j in 0..5
-    endTime = startTime + 60*60 # make slots 1 hr long
+    endTime = startTime + 60*60 - 1 # make slots 1 hr long
     isNight = startTime.hour < 7 || endTime.hour < 7
     row = j
     col = 0
@@ -65,6 +65,7 @@ for i in 0..10
     )
 
     slots.push slot
+    startTime = endTime + 1
   end
 
   people.push p
@@ -111,10 +112,12 @@ puts "old people"
 pp people[0]
 puts ''
 pp slotGrid[0]
-people, b = GTHC::Olson.driver people, slotGrid
-
-puts ""
-puts "new people"
-pp people[0]
-puts ''
-pp b[0]
+# people, b = GTHC::Olson.driver people, slotGrid
+test = GTHC::Olson.driver people, slotGrid
+ puts 'test'
+ pp test
+# puts ""
+# puts "new people"
+# pp people[0]
+# puts ''
+# pp b[0]
