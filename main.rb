@@ -37,7 +37,7 @@ for i in 0..10
     endTime = startTime + 60*60 - 1 # make slots 1 hr long
     isNight = startTime.hour < 7 || endTime.hour < 7
     row = j
-    col = 0
+    col = i
 
     status = ["Available", "Unavailable", "Scheduled"].sample
     if status == "Available"
@@ -109,15 +109,17 @@ end
 # end
 
 puts "old people"
-pp people[0]
+pp people[1]
 puts ''
-pp slotGrid[0]
+pp slotGrid[1]
+
 # people, b = GTHC::Olson.driver people, slotGrid
-test = GTHC::Olson.driver people, slotGrid
- puts 'test'
- pp test
 # puts ""
 # puts "new people"
-# pp people[0]
+# pp people[1]
 # puts ''
-# pp b[0]
+# pp b[1]
+
+test = GTHC::Olson.driver people, slotGrid
+puts 'test'
+pp test
